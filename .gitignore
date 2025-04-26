@@ -3,3 +3,7 @@
 __pycache__/
 last_published.txt
 config/common.yaml
+
+.DS_Store
+.venv
+chromedriver-mac-arm64
