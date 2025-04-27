@@ -16,11 +16,11 @@ include_footer: true
 # 要发布的文章目录
 content_dir : /Users/wayne/Downloads/blogthings/blogs/docs/AIGC/stable-diffusion/
 
-# 文章的标题
+# 文章的标题（默认值）
 title: 一键自动化博客发布工具,用过的人都说好(腾讯云篇)
-# 文章的内容
+# 文章的内容（默认值）
 content: /Users/wayne/Downloads/blogthings/blogs/blog/projects/011-auto-blog-publish-tool-txcloud.md
-# 文章的摘要
+# 文章的摘要（默认值）
 summary: 使用一键自动化博客发布工具blog-auto-publishing-tools把博客发布到腾讯云篇上。
 
 # 是否自动发布博客，不经过人工review
