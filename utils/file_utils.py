@@ -99,7 +99,7 @@ def read_file_with_footer(file):
             current_dir = os.getcwd()
             footer = read_file(os.path.join(current_dir, 'config/footer.md'))
 
-        return cleaned_content + "\n" + footer
+        return cleaned_content + "\n\n" + footer
 
 
 def remove_front_matter(markdown_content):
