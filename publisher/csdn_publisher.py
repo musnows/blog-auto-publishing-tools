@@ -48,6 +48,11 @@ def csdn_publisher(driver, content=None):
 
     # 文章内容 markdown版本
     file_content = read_file_with_footer(common_config['content'])
+    # 如果文章中有特殊格式，替换
+    file_content = file_content.replace("{abbrlink}", str(front_matter.get("abbrlink")))
+    file_content = file_content.replace("{title}", str(front_matter.get("title")))
+    file_content = file_content.replace("{date}", str(front_matter.get("date")))
+
     # 用的是CodeMirror,不能用元素赋值的方法，所以我们使用拷贝的方法
     cmd_ctrl = Keys.COMMAND if sys.platform == 'darwin' else Keys.CONTROL
     # 将要粘贴的文本内容复制到剪贴板
@@ -60,7 +65,7 @@ def csdn_publisher(driver, content=None):
     action_chains.key_down(cmd_ctrl).send_keys('v').key_up(cmd_ctrl).perform()
     time.sleep(3)  # 等待3秒
 
-    # 发布文章
+    # 右上角发布文章按钮
     send_button = driver.find_element(By.XPATH, '//button[contains(@class, "btn-publish") and contains(text(),"发布文章")]')
     send_button.click()
     time.sleep(2)
@@ -88,7 +93,8 @@ def csdn_publisher(driver, content=None):
         time.sleep(1)
 
     # 文章封面
-    if 'image' in front_matter and front_matter['image']:
+    cover_image = front_matter.get('image') or front_matter.get('cover')
+    if cover_image != "":
         file_input = driver.find_element(By.XPATH, "//input[@class='el-upload__input' and @type='file']")
         # 文件上传不支持远程文件上传，所以需要把图片下载到本地
         file_input.send_keys(download_image(front_matter['image']))
@@ -105,13 +111,20 @@ def csdn_publisher(driver, content=None):
         time.sleep(2)
 
     # 分类专栏
-    categories = csdn_config['categories']
+    categories = csdn_config['categories'] if not front_matter.get('categories') else front_matter['categories']
     if categories:
         # 先点击新建分类专栏
         add_category = driver.find_element(By.XPATH, '//div[@id="tagList"]//button[@class="tag__btn-tag" and contains(text(),"新建分类专栏")]')
         add_category.click()
         time.sleep(1)
         for category in categories:
+            # 设置专栏分类的映射（md文件和csdn的映射）
+            categories_tables = csdn_config.get('categories_tables')
+            if categories_tables:
+                category_name = ','.join(category) if isinstance(category, list) else category
+                # 专栏名字优先使用映射后的，如果没有则直接用拼接出来的或者原名
+                category = categories_tables.get(category_name, category_name)
+            # 设置专栏
             category_input = driver.find_element(By.XPATH, f'//input[@type="checkbox" and @value="{category}"]/..')
             category_input.click()
             time.sleep(1)
@@ -129,5 +142,12 @@ def csdn_publisher(driver, content=None):
 
     # 发布
     if auto_publish:
-        publish_button = driver.find_element(By.XPATH, '//div[@class="modal__button-bar")]//button[contains(text(),"发布文章")]')
+        publish_button = driver.find_element(By.XPATH, '//div[@class="modal__button-bar"]//button[contains(text(),"发布文章")]')
         publish_button.click()
+        time.sleep(2) # 等待文章发布成功
+        link_element = driver.find_element(By.XPATH, '//a[contains(text(),"查看文章")]')
+        article_url = link_element.get_attribute("href")
+        print("CSDN文章链接：", article_url)
+
+    # 无论如何都等待2秒，避免后续操作和当前页面冲突
+    time.sleep(2)
